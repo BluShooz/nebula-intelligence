@@ -31,8 +31,8 @@ export default function Home() {
       <ParticleBackground />
       <aside className="sidebar glass">
         <div className="logo-container">
-          <div className="logo-glow-wrap">
-            <img src="/nebula-face.jpg" alt="Nebula" className="nebula-logo-img" />
+          <div id="avatar-stage">
+            <img id="nebula-avatar" src="/nebula-face.jpg" alt="Nebula" />
           </div>
           <h1>NEBULA</h1>
         </div>
@@ -160,10 +160,14 @@ export default function Home() {
           text-shadow: var(--glow-cyan);
         }
 
-        .logo-glow-wrap {
-          position: relative;
+        /* === IMAGE PLACEMENT ONLY — NO OTHER UI CHANGES === */
+        #avatar-stage {
+          display: flex;
+          justify-content: center; /* horizontal centering */
+          align-items: center;     /* vertical centering */
           width: 48px;
           height: 48px;
+          position: relative;
           border-radius: 50%;
           overflow: hidden;
           border: 2px solid hsl(var(--accent-cyan));
@@ -171,7 +175,8 @@ export default function Home() {
           animation: logo-pulse 4s infinite alternate;
         }
 
-        .nebula-logo-img {
+        #nebula-avatar {
+          display: block;
           width: 100%;
           height: 100%;
           object-fit: cover;
