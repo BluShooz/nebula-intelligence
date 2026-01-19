@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nebula Intelligence
 
-## Getting Started
+![Nebula Face](./public/nebula-face.jpg)
 
-First, run the development server:
+**Nebula Intelligence** is a high-performance, futuristic AI chat platform that pushes the boundaries of browser-based inference. By combining **WebGPU-accelerated local LLMs** with cloud-based intelligence, Nebula delivers a private, low-latency, and state-of-the-art conversational experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Local Inference (WebLLM)**: Run large language models (like Llama 3) directly in your browser. No API keys, no server costs, maximum privacy.
+- **Intelligent Fallback**: Seamlessly switches to Google's **Gemini 1.5 Flash** if WebGPU is unavailable.
+- **Persona-Driven Intelligence**:
+    - **Gloves Off**: Grit-fueled, high-energy responses for elite users.
+    - **Gloves On**: Professional, precise, and balanced.
+    - **Stealth**: Minimalist, high-utility insights.
+- **Futuristic UI**: Glassmorphism design system, particle backgrounds, and fluid motion animations.
+- **Session Persistence**: Nebula remembers your context across browser sessions through local memory.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, Turbopack)
+- **Intelligence**: [@mlc-ai/web-llm](https://webllm.mlc.ai/), [@google/generative-ai](https://ai.google.dev/)
+- **Styling**: Vanilla CSS (HSL-based Design System), [styled-jsx](https://github.com/vercel/styled-jsx)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-## Learn More
+## 🛠️ Local Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository**:
+   ```bash
+   git clone <repo-url>
+   cd nebula-intelligence
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Configure Environment Variables**:
+   Create a `.env.local` file and add your Gemini API Key:
+   ```env
+   NEXT_PUBLIC_GEMINI_API_KEY=your_api_key_here
+   ```
 
-## Deploy on Vercel
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Production Build**:
+   ```bash
+   npm run build
+   npm start
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🌐 Deployment
+
+Deployed on **Vercel** with full WebGPU optimization support.
+
+---
+
+*Engineered for the highest level of execution.*

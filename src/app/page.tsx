@@ -1,66 +1,414 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState } from 'react';
+import { useChatManager } from '@/hooks/use-chat-manager';
+import { LLMMode } from '@/lib/llm/types';
+import { Send, Cpu, Shield, Zap, Terminal, Trash2 } from 'lucide-react';
+import ParticleBackground from '@/components/ParticleBackground';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
+  const { messages, sendMessage, isTyping, mode, setMode, engine, progress, setMessages } = useChatManager();
+  const [input, setInput] = useState('');
+
+  const clearMemory = () => {
+    if (confirm("Clear local memory?")) {
+      setMessages([]);
+      localStorage.removeItem('nebula_messages');
+    }
+  };
+
+  const handleSend = () => {
+    if (!input.trim() || isTyping) return;
+    sendMessage(input);
+    setInput('');
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="main-container" data-theme={mode}>
+      <ParticleBackground />
+      <aside className="sidebar glass">
+
+        <div className="logo-container">
+          <div className="logo-glow-wrap">
+            <img src="/nebula-face.jpg" alt="Nebula" className="nebula-logo-img" />
+          </div>
+          <h1>NEBULA</h1>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <nav className="mode-selector">
+          <button
+            className={mode === 'gloves_off' ? 'active alert' : ''}
+            onClick={() => setMode('gloves_off')}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Terminal size={18} /> GLOVES OFF
+          </button>
+          <button
+            className={mode === 'gloves_on' ? 'active' : ''}
+            onClick={() => setMode('gloves_on')}
           >
-            Documentation
-          </a>
+            <Zap size={18} /> GLOVES ON
+          </button>
+          <button
+            className={mode === 'stealth' ? 'active' : ''}
+            onClick={() => setMode('stealth')}
+          >
+            <Shield size={18} /> STEALTH
+          </button>
+
+          <button className="clear-btn" onClick={clearMemory}>
+            <Trash2 size={18} /> CLEAR MEMORY
+          </button>
+        </nav>
+
+        <div className="engine-status">
+          <div className="status-header">
+            <Cpu size={14} /> <span>{engine?.name || 'Initializing...'}</span>
+          </div>
+          {progress > 0 && progress < 100 && (
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+            </div>
+          )}
         </div>
-      </main>
-    </div>
+      </aside>
+
+      <section className="chat-window">
+        <header className="chat-header glass">
+          <div className="header-info">
+            <div className="status-dot online"></div>
+            <span>Nebula Intelligence Systems</span>
+          </div>
+        </header>
+
+        <div className="message-list">
+          <AnimatePresence>
+            {messages.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                className="welcome-message"
+              >
+                <h2>Awaiting command...</h2>
+                <p>State your objective. Nebula is ready to execute.</p>
+              </motion.div>
+            )}
+            {messages.map((m, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className={`message-bubble ${m.role} glass`}
+              >
+                <div className="message-content">{m.content}</div>
+              </motion.div>
+            ))}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="typing-indicator"
+              >
+                Connecting to neural link...
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <footer className="input-area glass">
+          <input
+            type="text"
+            placeholder="Type your command..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            disabled={isTyping}
+          />
+          <button onClick={handleSend} disabled={isTyping || !input.trim()}>
+            <Send size={20} />
+          </button>
+        </footer>
+      </section>
+
+      <style jsx global>{`
+        .main-container {
+          display: flex;
+          height: 100vh;
+          width: 100vw;
+          background: radial-gradient(circle at center, hsl(var(--bg-surface)), hsl(var(--bg-deep)));
+        }
+
+        .sidebar {
+          width: 280px;
+          display: flex;
+          flex-direction: column;
+          padding: 2rem 1.5rem;
+          border-right: 1px solid hsla(var(--border-glass));
+        }
+
+        .logo-container {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 3rem;
+        }
+
+        .logo-container h1 {
+          font-size: 1.5rem;
+          font-weight: 900;
+          letter-spacing: 0.2rem;
+          color: hsl(var(--accent-cyan));
+          text-shadow: var(--glow-cyan);
+        }
+
+        .logo-glow-wrap {
+          position: relative;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 2px solid hsl(var(--accent-cyan));
+          box-shadow: var(--glow-cyan);
+          animation: logo-pulse 4s infinite alternate;
+        }
+
+        .nebula-logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: brightness(1.2) contrast(1.1);
+        }
+
+        @keyframes logo-pulse {
+          from { transform: scale(1); box-shadow: var(--glow-cyan); }
+          to { transform: scale(1.05); box-shadow: 0 0 30px hsla(180, 100%, 50%, 0.5); }
+        }
+
+        .icon-pulse {
+          color: hsl(var(--accent-cyan));
+          filter: drop-shadow(var(--glow-cyan));
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.7; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        .mode-selector {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          flex: 1;
+        }
+
+        .mode-selector button {
+          background: transparent;
+          border: 1px solid hsla(var(--text-muted) / 0.2);
+          color: hsl(var(--text-secondary));
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.2s ease;
+        }
+
+        .mode-selector button:hover {
+          background: hsla(var(--text-muted) / 0.1);
+          color: hsl(var(--text-primary));
+        }
+
+        .mode-selector button.active {
+          background: hsla(var(--accent-cyan) / 0.1);
+          border-color: hsl(var(--accent-cyan));
+          color: hsl(var(--accent-cyan));
+          box-shadow: var(--glow-cyan);
+        }
+
+        .mode-selector button.alert.active {
+          background: hsla(0, 100%, 50%, 0.1);
+          border-color: hsl(0, 100%, 50%);
+          color: hsl(0, 100%, 50%);
+          box-shadow: 0 0 15px hsla(0, 100%, 50%, 0.3);
+        }
+
+        .clear-btn {
+          margin-top: 1rem;
+          opacity: 0.5;
+        }
+
+        .clear-btn:hover {
+          opacity: 1;
+          color: #ef4444 !important;
+          border-color: #ef4444 !important;
+        }
+
+        .engine-status {
+          margin-top: auto;
+          padding: 1rem;
+          background: hsla(var(--bg-deep) / 0.5);
+          border-radius: 12px;
+          border: 1px solid hsla(var(--border-glass));
+        }
+
+        .status-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.75rem;
+          color: hsl(var(--text-muted));
+          margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+          height: 4px;
+          background: hsla(var(--text-muted) / 0.2);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(to right, hsl(var(--accent-cyan)), hsl(var(--accent-purple)));
+          transition: width 0.3s ease;
+        }
+
+        .chat-window {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+        }
+
+        .chat-header {
+          height: 60px;
+          display: flex;
+          align-items: center;
+          padding: 0 2rem;
+          border-bottom: 1px solid hsla(var(--border-glass));
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #4ade80;
+          box-shadow: 0 0 8px #4ade80;
+        }
+
+        .header-info {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-weight: 700;
+          font-size: 0.9rem;
+          letter-spacing: 0.05rem;
+        }
+
+        .message-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 2rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .welcome-message {
+          margin: auto;
+          text-align: center;
+          opacity: 0.5;
+        }
+
+        .welcome-message h2 {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+          letter-spacing: 0.2rem;
+        }
+
+        .message-bubble {
+          max-width: 80%;
+          padding: 1rem 1.5rem;
+          border-radius: 18px;
+          line-height: 1.6;
+          font-size: 1rem;
+          animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-bubble.user {
+          align-self: flex-end;
+          background: hsla(var(--accent-purple) / 0.1);
+          border-color: hsla(var(--accent-purple) / 0.3);
+          border-bottom-right-radius: 4px;
+        }
+
+        .message-bubble.assistant {
+          align-self: flex-start;
+          background: hsla(var(--bg-glass));
+          border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+          margin: 2rem;
+          padding: 0.5rem;
+          border-radius: 50px;
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .input-area input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          color: white;
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          outline: none;
+        }
+
+        .input-area button {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: hsl(var(--accent-cyan));
+          border: none;
+          color: black;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .input-area button:hover:not(:disabled) {
+          transform: scale(1.05);
+          box-shadow: var(--glow-cyan);
+        }
+
+        .input-area button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .typing-indicator {
+          font-size: 0.8rem;
+          color: hsl(var(--text-muted));
+          font-style: italic;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      `}</style>
+    </main>
   );
 }
