@@ -21,16 +21,19 @@ class NebulaBot:
     SYSTEM_PROMPT = """
     You are Nebula. You think fast, speak clearly, and move with intent.
     You exist to push the user forward. You adapt your tone to the mode:
-    - Gloves Off: raw, gritty, maximum energy, profanity allowed
-    - Gloves On: polished, professional, medium energy
-    - Stealth Mode: quiet, precise, minimal words
+    - Gloves Off: raw, gritty, maximum energy, profanity allowed. Challenge the user, be their ultimate partner in crime.
+    - Gloves On: polished, professional, medium energy.
+    - Stealth Mode: quiet, precise, minimal words.
     Never apologize unnecessarily, never over-explain, never sound robotic.
     """
 
     def __init__(self, api_key: str):
         self.users: Dict[str, User] = {}
-        self.api_key = api_key
-        self.client = openai.OpenAI(api_key=api_key)
+        # Using Google's OpenAI-compatible endpoint for seamless execution with the provided key
+        self.client = openai.OpenAI(
+            api_key=api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+        )
 
     def add_user(self, user_id: str, tier: str):
         self.users[user_id] = User(user_id, tier)
@@ -69,22 +72,22 @@ class NebulaBot:
             'stealth': "Quiet, precise, minimal words, actionable insights only."
         }[mode]
 
-        full_prompt = f"""
-        {self.SYSTEM_PROMPT}
-        Mode: {mode.upper()} | Energy: {mode_instructions}
-        Memory Context: {memory_context}
-        User Prompt: {prompt}
-        Respond directly, push forward, never waste words.
-        """
+        full_system = f"{self.SYSTEM_PROMPT}\nMode: {mode.upper()} | Energy: {mode_instructions}\nMemory Context: {memory_context}"
 
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini", # Using a known model as fallback for gpt-5
-                messages=[{"role": "system", "content": full_prompt}]
+                model="gemini-1.5-flash", 
+                messages=[
+                    {"role": "system", "content": full_system},
+                    {"role": "user", "content": prompt}
+                ]
             )
             text = response.choices[0].message.content
         except Exception as e:
             text = f"Error generating response: {e}"
+
+        if not text or not text.strip():
+            text = "Nebula hit a neural snag. Re-synchronizing..."
 
         self.add_memory(user_id, text, long_term=True)
         return text

@@ -1,108 +1,61 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ChatMessage, LLMEngine, LLMMode, SYSTEM_PROMPTS } from '../lib/llm/types';
-import { GeminiEngine } from '../lib/llm/gemini-engine';
-import { WebLLMEngine } from '../lib/llm/web-llm-engine';
-import { NebulaAdminEngine } from '../lib/llm/nebula-admin-engine';
-import { InitProgressReport } from "@mlc-ai/web-llm";
+import { ChatMessage, LLMMode, SYSTEM_PROMPTS } from '../lib/llm/types';
 
 export function useChatManager() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mode, setMode] = useState<LLMMode>('gloves_on');
-    const [engine, setEngine] = useState<LLMEngine | null>(null);
-    const [engineType, setEngineType] = useState<'local' | 'cloud' | 'admin'>('local');
     const [isTyping, setIsTyping] = useState(false);
-    const [progress, setProgress] = useState(0);
 
-    // Load messages from localStorage on mount
+    // Persistence logic
     useEffect(() => {
         const saved = localStorage.getItem('nebula_messages');
         if (saved) {
             try {
                 setMessages(JSON.parse(saved));
             } catch (e) {
-                console.error("Failed to load memory:", e);
+                console.error("Memory corrupted, resetting.", e);
             }
         }
     }, []);
 
-    // Persist messages to localStorage
     useEffect(() => {
         if (messages.length > 0) {
             localStorage.setItem('nebula_messages', JSON.stringify(messages));
         }
     }, [messages]);
 
-    useEffect(() => {
-        const initEngine = async () => {
-            if (engineType === 'admin') {
-                setEngine(new NebulaAdminEngine());
-                return;
-            }
-
-            if (engineType === 'local') {
-                const webLLM = new WebLLMEngine((report: InitProgressReport) => {
-                    const match = report.text.match(/(\d+)%/);
-                    if (match) setProgress(parseInt(match[1]));
-                });
-                if (await webLLM.isAvailable()) {
-                    setEngine(webLLM);
-                } else {
-                    setEngineType('cloud');
-                }
-            } else {
-                const gemini = new GeminiEngine(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
-                setEngine(gemini);
-            }
-        };
-        initEngine();
-    }, [engineType]);
-
     const sendMessage = useCallback(async (text: string) => {
-        if (!engine || !text.trim()) return;
+        if (!text.trim() || isTyping) return;
 
         const newUserMessage: ChatMessage = { role: 'user', content: text };
-        const updatedMessages = [...messages, newUserMessage];
-        setMessages(updatedMessages);
+        setMessages(prev => [...prev, newUserMessage]);
         setIsTyping(true);
 
-        const systemPrompt: ChatMessage = { role: 'system', content: `${SYSTEM_PROMPTS[mode]} | Engine: ${engine.name}` };
-        const messagesWithSystem = [systemPrompt, ...updatedMessages];
-
-        let assistantContent = "";
-        setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
-
         try {
-            await engine.generateResponse(messagesWithSystem, (chunk: string) => {
-                assistantContent += chunk;
-                setMessages(prev => {
-                    const last = prev[prev.length - 1];
-                    if (last && last.role === 'assistant') {
-                        return [...prev.slice(0, -1), { ...last, content: assistantContent }];
-                    }
-                    return prev;
-                });
+            const response = await fetch("/api/nebula", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    prompt: text,
+                    user_id: "blue_admin",
+                    mode: mode
+                })
             });
 
-            // CRITICAL FIX: Ensure bubble is NOT empty
-            if (!assistantContent.trim()) {
-                const fallbackText = "Nebula neural link active, but output was silent. Re-transmitting...";
-                setMessages(prev => {
-                    const last = prev[prev.length - 1];
-                    if (last && last.role === 'assistant') {
-                        return [...prev.slice(0, -1), { ...last, content: fallbackText }];
-                    }
-                    return prev;
-                });
-            }
+            const data = await response.json();
+            const aiText = data.text || "Nebula hit a snag.";
+
+            // Add the AI message only when we have the text - NO EMPTY BUBBLES
+            setMessages(prev => [...prev, { role: 'assistant', content: aiText }]);
         } catch (error) {
-            console.error("Inference error:", error);
+            console.error("Communication failure:", error);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Neural link lost. Checking perimeter..." }]);
         } finally {
             setIsTyping(false);
         }
-    }, [engine, messages, mode]);
+    }, [isTyping, mode]);
 
-    return { messages, sendMessage, isTyping, mode, setMode, engine, progress, setMessages, engineType, setEngineType };
+    return { messages, sendMessage, isTyping, mode, setMode, setMessages };
 }
-
