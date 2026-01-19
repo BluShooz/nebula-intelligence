@@ -1,5 +1,5 @@
 from typing import Dict, List
-import openai
+import google.generativeai as genai
 import os
 
 class User:
@@ -29,11 +29,8 @@ class NebulaBot:
 
     def __init__(self, api_key: str):
         self.users: Dict[str, User] = {}
-        # Using Google's OpenAI-compatible endpoint for seamless execution with the provided key
-        self.client = openai.OpenAI(
-            api_key=api_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-        )
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def add_user(self, user_id: str, tier: str):
         self.users[user_id] = User(user_id, tier)
@@ -75,14 +72,13 @@ class NebulaBot:
         full_system = f"{self.SYSTEM_PROMPT}\nMode: {mode.upper()} | Energy: {mode_instructions}\nMemory Context: {memory_context}"
 
         try:
-            response = self.client.chat.completions.create(
-                model="gemini-1.5-flash", 
-                messages=[
-                    {"role": "system", "content": full_system},
-                    {"role": "user", "content": prompt}
+            # Using native SDK for "flawless" connection
+            response = self.model.generate_content(
+                contents=[
+                    {"role": "user", "parts": [f"SYSTEM INSTRUCTIONS: {full_system}\n\nUSER PROMPT: {prompt}"]}
                 ]
             )
-            text = response.choices[0].message.content
+            text = response.text
         except Exception as e:
             text = f"Error generating response: {e}"
 
