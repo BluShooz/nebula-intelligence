@@ -1,12 +1,11 @@
-'use client';
-
 import { useState, useCallback, useEffect } from 'react';
-import { ChatMessage, LLMMode, SYSTEM_PROMPTS } from '../lib/llm/types';
+import { ChatMessage, LLMMode } from '../lib/llm/types';
 
 export function useChatManager() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mode, setMode] = useState<LLMMode>('gloves_on');
     const [isTyping, setIsTyping] = useState(false);
+
 
     // Persistence logic
     useEffect(() => {
