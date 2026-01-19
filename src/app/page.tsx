@@ -8,7 +8,10 @@ import ParticleBackground from '@/components/ParticleBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
-  const { messages, sendMessage, isTyping, mode, setMode, engine, progress, setMessages } = useChatManager();
+  const {
+    messages, sendMessage, isTyping, mode, setMode,
+    engine, progress, setMessages, engineType, setEngineType
+  } = useChatManager();
   const [input, setInput] = useState('');
 
   const clearMemory = () => {
@@ -63,7 +66,30 @@ export default function Home() {
 
         <div className="engine-status">
           <div className="status-header">
-            <Cpu size={14} /> <span>{engine?.name || 'Initializing...'}</span>
+            <Cpu size={14} /> <span>Engine Control</span>
+          </div>
+          <div className="engine-toggle-grid">
+            <button
+              className={engineType === 'local' ? 'active' : ''}
+              onClick={() => setEngineType('local')}
+            >
+              Local
+            </button>
+            <button
+              className={engineType === 'cloud' ? 'active' : ''}
+              onClick={() => setEngineType('cloud')}
+            >
+              Cloud
+            </button>
+            <button
+              className={engineType === 'admin' ? 'active alert' : ''}
+              onClick={() => setEngineType('admin')}
+            >
+              Admin
+            </button>
+          </div>
+          <div className="active-engine-name">
+            {engine?.name || 'Initializing...'}
           </div>
           {progress > 0 && progress < 100 && (
             <div className="progress-bar">
@@ -254,6 +280,29 @@ export default function Home() {
           background: hsla(var(--bg-deep) / 0.5);
           border-radius: 12px;
           border: 1px solid hsla(var(--border-glass));
+        }
+
+        .engine-toggle-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.4rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .engine-toggle-grid button {
+          padding: 0.4rem 0.2rem !important;
+          font-size: 0.65rem !important;
+          border-radius: 4px !important;
+          text-align: center;
+          justify-content: center;
+        }
+
+        .active-engine-name {
+          font-size: 0.7rem;
+          color: hsl(var(--accent-cyan));
+          margin-bottom: 0.5rem;
+          font-weight: 700;
+          text-transform: uppercase;
         }
 
         .status-header {
