@@ -1,0 +1,33 @@
+:root {
+  /* Futuristic Dark Palette - Nebula */
+  --bg-deep: 240 10% 4%;
+  --bg-surface: 240 10% 8%;
+  --bg-glass: 240 10% 12% / 0.7;
+  
+  --accent-cyan: 180 100% 50%;
+  --accent-purple: 270 100% 60%;
+  --accent-pink: 320 100% 60%;
+  
+  --text-primary: 0 0% 98%;
+  --text-secondary: 240 5% 70%;
+  --text-muted: 240 5% 40%;
+  
+  --border-glass: 240 10% 20% / 0.5;
+  --glow-cyan: 0 0 20px hsla(180, 100%, 50%, 0.3);
+  --glow-purple: 0 0 20px hsla(270, 100%, 60%, 0.3);
+
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme='gloves_off'] {
+  --accent-cyan: 0 100% 50%; /* Red for Gloves Off */
+  --glow-cyan: 0 0 25px hsla(0, 100%, 50%, 0.5);
+  --bg-deep: 0 10% 4%;
+}
+
+[data-theme='stealth'] {
+  --accent-cyan: 240 5% 50%;
+  --glow-cyan: none;
+  --bg-deep: 0 0% 2%;
+}
