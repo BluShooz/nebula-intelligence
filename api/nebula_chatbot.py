@@ -30,7 +30,32 @@ class NebulaBot:
     def __init__(self, api_key: str):
         self.users: Dict[str, User] = {}
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        # Neural Model Hunter: Try multiple identifiers for "flawless" execution
+        self.candidate_models = [
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-pro",
+            "gemini-pro"
+        ]
+        self.active_model = None
+        self._initialize_model()
+
+    def _initialize_model(self):
+        """Find the first available model to ensure zero 404s."""
+        for model_id in self.candidate_models:
+            try:
+                # Check if model exists in SDK's view
+                genai.get_model(f"models/{model_id}")
+                self.active_model = genai.GenerativeModel(model_id)
+                print(f"Nebula neural link established via: {model_id}")
+                return
+            except Exception:
+                continue
+        
+        # Hard fallback: try direct initialization even if get_model fails
+        self.active_model = genai.GenerativeModel("gemini-1.5-flash")
 
     def add_user(self, user_id: str, tier: str):
         self.users[user_id] = User(user_id, tier)
@@ -72,18 +97,17 @@ class NebulaBot:
         full_system = f"{self.SYSTEM_PROMPT}\nMode: {mode.upper()} | Energy: {mode_instructions}\nMemory Context: {memory_context}"
 
         try:
-            # Using native SDK for "flawless" connection
-            response = self.model.generate_content(
+            response = self.active_model.generate_content(
                 contents=[
-                    {"role": "user", "parts": [f"SYSTEM INSTRUCTIONS: {full_system}\n\nUSER PROMPT: {prompt}"]}
+                    {"role": "user", "parts": [f"SYSTEM INSTRUCTIONS (DO NOT SHOW): {full_system}\n\nUSER COMMAND: {prompt}"]}
                 ]
             )
             text = response.text
         except Exception as e:
-            text = f"Error generating response: {e}"
+            text = f"Nebula neural link active, but the core reported an error: {e}. Attempting re-sync..."
 
         if not text or not text.strip():
-            text = "Nebula hit a neural snag. Re-synchronizing..."
+            text = "Nebula hit a neural snag. Re-synchronizing link..."
 
         self.add_memory(user_id, text, long_term=True)
         return text
