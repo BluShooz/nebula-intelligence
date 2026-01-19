@@ -29,6 +29,11 @@ export default function Home() {
   return (
     <main className="main-container" data-theme={mode}>
       <ParticleBackground />
+      <img
+        src="/nebula-face.jpg"
+        id="nebula-bg-avatar"
+        aria-hidden="true"
+      />
       <aside className="sidebar glass">
         <div className="logo-container">
           <div id="avatar-stage">
@@ -388,6 +393,31 @@ export default function Home() {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+        }
+
+        /* === BACKGROUND AVATAR — PLACEMENT ONLY === */
+        #nebula-bg-avatar {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+
+          opacity: 0.08;              /* light background presence */
+          z-index: 0;                 /* stays behind chat */
+          pointer-events: none;       /* NEVER blocks input */
+
+          max-width: 420px;           /* safe visual size */
+          width: 60vw;
+          height: auto;
+        }
+
+        /* Ensure chat stays above avatar */
+        .sidebar,
+        .chat-window,
+        .message-list,
+        .input-area {
+          position: relative;
+          z-index: 1;
         }
       `}</style>
     </main>
