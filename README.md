@@ -55,7 +55,8 @@
 
 ## 🌐 Deployment
 
-Deployed on **Vercel** with full WebGPU optimization support.
+Deployed on **Vercel** with full WebGPU optimization support:  
+👉 [nebula-intelligence.vercel.app](https://nebula-intelligence-4cbj22jlc-jon-smiths-projects-a3dfc292.vercel.app)
 
 ---
 
