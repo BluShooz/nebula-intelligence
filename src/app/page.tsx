@@ -9,8 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
   const {
-    messages, sendMessage, isTyping, mode, setMode,
-    engine, progress, setMessages, engineType, setEngineType
+    messages, sendMessage, isTyping, mode, setMode, setMessages
   } = useChatManager();
   const [input, setInput] = useState('');
 
@@ -31,7 +30,6 @@ export default function Home() {
     <main className="main-container" data-theme={mode}>
       <ParticleBackground />
       <aside className="sidebar glass">
-
         <div className="logo-container">
           <div className="logo-glow-wrap">
             <img src="/nebula-face.jpg" alt="Nebula" className="nebula-logo-img" />
@@ -66,36 +64,11 @@ export default function Home() {
 
         <div className="engine-status">
           <div className="status-header">
-            <Cpu size={14} /> <span>Engine Control</span>
-          </div>
-          <div className="engine-toggle-grid">
-            <button
-              className={engineType === 'local' ? 'active' : ''}
-              onClick={() => setEngineType('local')}
-            >
-              Local
-            </button>
-            <button
-              className={engineType === 'cloud' ? 'active' : ''}
-              onClick={() => setEngineType('cloud')}
-            >
-              Cloud
-            </button>
-            <button
-              className={engineType === 'admin' ? 'active alert' : ''}
-              onClick={() => setEngineType('admin')}
-            >
-              Admin
-            </button>
+            <Cpu size={14} /> <span>NEURAL CORE ACTIVE</span>
           </div>
           <div className="active-engine-name">
-            {engine?.name || 'Initializing...'}
+            NEBULA HYBRID v1.0
           </div>
-          {progress > 0 && progress < 100 && (
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-            </div>
-          )}
         </div>
       </aside>
 
@@ -210,18 +183,6 @@ export default function Home() {
           to { transform: scale(1.05); box-shadow: 0 0 30px hsla(180, 100%, 50%, 0.5); }
         }
 
-        .icon-pulse {
-          color: hsl(var(--accent-cyan));
-          filter: drop-shadow(var(--glow-cyan));
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.7; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-
         .mode-selector {
           display: flex;
           flex-direction: column;
@@ -282,21 +243,6 @@ export default function Home() {
           border: 1px solid hsla(var(--border-glass));
         }
 
-        .engine-toggle-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 0.4rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .engine-toggle-grid button {
-          padding: 0.4rem 0.2rem !important;
-          font-size: 0.65rem !important;
-          border-radius: 4px !important;
-          text-align: center;
-          justify-content: center;
-        }
-
         .active-engine-name {
           font-size: 0.7rem;
           color: hsl(var(--accent-cyan));
@@ -312,19 +258,6 @@ export default function Home() {
           font-size: 0.75rem;
           color: hsl(var(--text-muted));
           margin-bottom: 0.5rem;
-        }
-
-        .progress-bar {
-          height: 4px;
-          background: hsla(var(--text-muted) / 0.2);
-          border-radius: 2px;
-          overflow: hidden;
-        }
-
-        .progress-fill {
-          height: 100%;
-          background: linear-gradient(to right, hsl(var(--accent-cyan)), hsl(var(--accent-purple)));
-          transition: width 0.3s ease;
         }
 
         .chat-window {
@@ -386,12 +319,6 @@ export default function Home() {
           border-radius: 18px;
           line-height: 1.6;
           font-size: 1rem;
-          animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
         }
 
         .message-bubble.user {
